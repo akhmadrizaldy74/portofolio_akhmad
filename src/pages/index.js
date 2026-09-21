@@ -40,6 +40,40 @@ const projects = [
   },
   {
     number: '02',
+    titleId: 'WargaBersih – Platform Digital Pengelolaan Kebersihan RT/RW',
+    titleEn: 'WargaBersih – Digital Cleanliness Management Platform for RT/RW',
+    typeId: 'PLATFORM WEB & UI/UX',
+    typeEn: 'WEB PLATFORM & UI/UX',
+    categoryId: 'PLATFORM DIGITAL / RT & RW LINGKUNGAN',
+    categoryEn: 'DIGITAL PLATFORM / NEIGHBORHOOD RT & RW',
+    descriptionId: 'Mendigitalisasi koordinasi warga dan pengurus lingkungan dalam pelaporan sampah, penjadwalan armada angkut, serta transparansi status kebersihan secara terorganisir.',
+    descriptionEn: 'Digitizing coordination between residents and community administrators for waste reporting, collection fleet scheduling, and organized cleanliness status transparency.',
+    role: 'Front-End Developer & UI/UX Designer',
+    problemId: 'Menghadirkan antarmuka berbasis web yang responsif, modern, dan mudah digunakan oleh warga maupun pengurus lingkungan guna mempercepat alur penanganan aduan sampah dan penyebaran jadwal berkala.',
+    problemEn: 'Delivered a responsive, modern, and user-friendly web interface for residents and administrators to accelerate waste issue resolution and routine schedule dissemination.',
+    highlightsId: [
+      'Interactive Public Landing Page & Dashboard Lingkungan (Penyajian statistik metrik RT/RW secara visual)',
+      'Digital Waste Ticketing Flow (Alur pelaporan penumpukan sampah lengkap dengan foto dan titik lokasi)',
+      'Scheduled Waste Collection System (Informasi jadwal pengangkutan berkala otomatis per wilayah RW)',
+      'Real-time Notification & Status Tracking (Pemantauan status penanganan laporan warga secara transparan)',
+      'Component Design System & Responsive Layout (Penerapan arsitektur UI/UX Figma ke komponen web fungsional)',
+    ],
+    highlightsEn: [
+      'Interactive Public Landing Page & Community Dashboard (Visual presentation of neighborhood metric statistics)',
+      'Digital Waste Ticketing Flow (Waste accumulation reporting flow with photos and location points)',
+      'Scheduled Waste Collection System (Automated routine collection schedule per neighborhood zone)',
+      'Real-time Notification & Status Tracking (Transparent monitoring of resident complaint progress)',
+      'Component Design System & Responsive Layout (Translating Figma UI/UX architecture into functional web components)',
+    ],
+    image: '/images/projects/wargabersih-mockup.png',
+    stackList: ['FIGMA', 'HTML5', 'CSS3', 'JAVASCRIPT', 'WEBFLOW', 'GITHUB PAGES'],
+    actionLabelId: 'Demo / Repositori',
+    actionLabelEn: 'Demo / Repository',
+    repo: 'https://github.com/akhmadrizaldy74',
+    demo: '#',
+  },
+  {
+    number: '03',
     titleId: 'MOBENG – On-Demand Car Service & Maintenance Mobile App',
     titleEn: 'MOBENG – On-Demand Car Service & Maintenance Mobile App',
     typeId: 'DESAIN UI/UX & APLIKASI MOBILE',
@@ -576,7 +610,9 @@ export default function Home() {
                         )}
                         {project.repo && (!project.figma || project.repo !== project.figma) && (
                           <a href={project.repo} className={styles.projectLinkBtn} target="_blank" rel="noreferrer">
-                            <span>{text.repository}</span>
+                            <span>
+                              {(language === 'id' ? project.actionLabelId : project.actionLabelEn) || text.repository}
+                            </span>
                             <span>↗</span>
                           </a>
                         )}
