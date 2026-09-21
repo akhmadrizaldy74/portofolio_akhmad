@@ -676,6 +676,22 @@
   line-height: 1.45;
 }
 
+.highlightsList {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: #cfd1ca;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.highlightsList li {
+  margin-bottom: 4px;
+}
+
+.highlightsList li:last-child {
+  margin-bottom: 0;
+}
+
 .projectActions {
   display: flex;
   gap: 16px;

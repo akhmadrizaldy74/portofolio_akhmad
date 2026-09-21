@@ -8,6 +8,8 @@ const projects = [
     number: '01',
     titleId: 'Sistem Informasi Manajemen dan Monitoring APAR',
     titleEn: 'Fire Extinguisher Management and Monitoring System',
+    typeId: 'SISTEM WEB OPERASIONAL',
+    typeEn: 'OPERATIONAL WEB SYSTEM',
     categoryId: 'Sistem operasional / PD Anugrah Utama',
     categoryEn: 'Operational web system / PD Anugrah Utama',
     descriptionId: 'Mendigitalisasi dan menyederhanakan pelacakan kelayakan Alat Pemadam Api Ringan yang sebelumnya kurang terstruktur.',
@@ -19,6 +21,36 @@ const projects = [
     stackList: ['Laravel', 'PHP', 'Tailwind CSS', 'MySQL'],
     demo: '#',
     repo: 'https://github.com/akhmadrizaldy74',
+  },
+  {
+    number: '02',
+    titleId: 'MOBENG – On-Demand Car Service & Maintenance Mobile App',
+    titleEn: 'MOBENG – On-Demand Car Service & Maintenance Mobile App',
+    typeId: 'DESAIN UI/UX & APLIKASI MOBILE',
+    typeEn: 'UI/UX DESIGN & MOBILE APP',
+    categoryId: 'UI/UX Design / Mobile App Design',
+    categoryEn: 'UI/UX Design / Mobile App Design',
+    descriptionId: 'Merancang antarmuka (UI) dan alur pengguna (UX) end-to-end untuk aplikasi pemesanan servis berkala dan ganti oli mobil on-demand, mulai dari alur reservasi, pemilihan paket servis, hingga pelacakan teknisi secara real-time.',
+    descriptionEn: 'Designed an end-to-end user interface (UI) and user experience (UX) for an on-demand car maintenance and periodic service app, covering reservation flows, service package selection, and real-time technician tracking.',
+    role: 'UI/UX Designer',
+    problemId: 'Menghadirkan alur pemesanan multi-step yang intuitif, transparansi estimasi biaya paket servis, pelacakan teknisi real-time, serta design system terstruktur dengan komponen reusable di Figma.',
+    problemEn: 'Delivered an intuitive multi-step booking flow, transparent service package cost estimation, real-time technician tracking, and a structured Figma design system with reusable components.',
+    highlightsId: [
+      'Onboarding & Multi-step Service Booking Flow',
+      'Paket Servis & Estimasi Biaya Transparan',
+      'Real-time Technician Tracking System',
+      'Design System terstruktur & Komponen Reusable di Figma',
+    ],
+    highlightsEn: [
+      'Onboarding & Multi-step Service Booking Flow',
+      'Transparent Service Packages & Cost Estimation',
+      'Real-time Technician Tracking System',
+      'Structured Design System & Reusable Figma Components',
+    ],
+    image: '/images/projects/mobeng-mockup.png',
+    stackList: ['Figma', 'UI/UX', 'Mobile Design', 'Prototyping', 'Wireframing'],
+    figma: 'https://www.figma.com/',
+    demo: '#',
   },
 ]
 
@@ -190,6 +222,8 @@ const copy = {
     download: 'Unduh CV',
     liveDemo: 'Demo Langsung',
     repository: 'Repositori',
+    figmaPrototype: 'Figma Prototype',
+    highlightsLabel: 'Fitur Utama',
     roleLabel: 'Peran',
     outcome: 'Solusi & Dampak',
   },
@@ -231,6 +265,8 @@ const copy = {
     download: 'Download CV',
     liveDemo: 'Live Demo',
     repository: 'Repository',
+    figmaPrototype: 'Figma Prototype',
+    highlightsLabel: 'Key Highlights',
     roleLabel: 'Role',
     outcome: 'Solution & Impact',
   },
@@ -463,7 +499,11 @@ export default function Home() {
                         className={styles.projectCoverImg}
                       />
                       <div className={styles.projectVisualMeta}>
-                        <span>{language === 'id' ? 'SISTEM WEB OPERASIONAL' : 'OPERATIONAL WEB SYSTEM'}</span>
+                        <span>
+                          {language === 'id'
+                            ? (project.typeId || 'SISTEM WEB OPERASIONAL')
+                            : (project.typeEn || 'OPERATIONAL WEB SYSTEM')}
+                        </span>
                         <div className={styles.pillContainer}>
                           {project.stackList.map((tag) => (
                             <span key={tag} className={styles.stackPillSmall}>{tag}</span>
@@ -499,13 +539,37 @@ export default function Home() {
                             {language === 'id' ? project.problemId : project.problemEn}
                           </p>
                         </div>
+                        {((language === 'id' ? project.highlightsId : project.highlightsEn) || project.highlights) && (
+                          <div className={styles.metaItem}>
+                            <span className={styles.metaLabel}>{text.highlightsLabel}</span>
+                            <ul className={styles.highlightsList}>
+                              {((language === 'id' ? project.highlightsId : project.highlightsEn) || project.highlights).map((item, idx) => (
+                                <li key={idx}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
 
                       <div className={styles.projectActions}>
-                        <a href={project.repo} className={styles.projectLinkBtn} target="_blank" rel="noreferrer">
-                          <span>{text.repository}</span>
-                          <span>↗</span>
-                        </a>
+                        {project.figma && (
+                          <a href={project.figma} className={styles.projectLinkBtn} target="_blank" rel="noreferrer">
+                            <span>{text.figmaPrototype}</span>
+                            <span>↗</span>
+                          </a>
+                        )}
+                        {project.repo && (!project.figma || project.repo !== project.figma) && (
+                          <a href={project.repo} className={styles.projectLinkBtn} target="_blank" rel="noreferrer">
+                            <span>{text.repository}</span>
+                            <span>↗</span>
+                          </a>
+                        )}
+                        {project.demo && project.demo !== '#' && (
+                          <a href={project.demo} className={styles.projectLinkBtn} target="_blank" rel="noreferrer">
+                            <span>{text.liveDemo}</span>
+                            <span>↗</span>
+                          </a>
+                        )}
                       </div>
                     </div>
                   </article>
