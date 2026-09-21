@@ -67,8 +67,8 @@ const projects = [
     ],
     image: '/images/projects/wargabersih-mockup.png',
     stackList: ['FIGMA', 'HTML5', 'CSS3', 'JAVASCRIPT', 'WEBFLOW', 'GITHUB PAGES'],
-    actionLabelId: 'Demo / Repositori',
-    actionLabelEn: 'Demo / Repository',
+    actionLabelId: 'Repositori',
+    actionLabelEn: 'Repository',
     repo: 'https://github.com/akhmadrizaldy74',
     demo: '#',
   },
@@ -936,11 +936,11 @@ export default function Home() {
                 <p className={styles.eyebrow}>{language === 'id' ? 'Sertifikasi & Pelatihan' : 'Certification & Training'}</p>
                 <h2 id="certificate-title" className={styles.modalTitle}>{selectedCertificate.title}</h2>
                 <p className={styles.modalMeta}>{language === 'id' ? selectedCertificate.metaId : selectedCertificate.metaEn}</p>
-                
+
                 <CertificatePreview certificate={selectedCertificate} language={language} />
-                
+
                 <p className={styles.certificateDescription}>{language === 'id' ? selectedCertificate.textId : selectedCertificate.textEn}</p>
-                
+
                 {selectedCertificate.pdfPath ? (
                   <a className={styles.certificatePdfLink} href={selectedCertificate.pdfPath} target="_blank" rel="noreferrer">
                     <span>{language === 'id' ? 'Buka Dokumen PDF Asli' : 'Open Original PDF Document'}</span>
