@@ -614,6 +614,7 @@
 .projectBadgeRow {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 12px;
 }
@@ -623,6 +624,30 @@
   font-family: 'DM Mono', monospace;
   font-size: 0.8rem;
   font-weight: 500;
+}
+
+.projectYear {
+  color: #d8a85b;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  background: rgba(216, 168, 91, 0.08);
+  border: 1px solid rgba(216, 168, 91, 0.22);
+  border-radius: 4px;
+}
+
+.projectStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  color: #c4c7be;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
 }
 
 .projectCategory {
@@ -795,6 +820,22 @@
   margin: 0;
 }
 
+.timelineResponsibilities {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: #c4c7be;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.timelineResponsibilities li {
+  margin-bottom: 6px;
+}
+
+.timelineResponsibilities li:last-child {
+  margin-bottom: 0;
+}
+
 .timelineCardInteractive {
   cursor: pointer;
 }
@@ -834,7 +875,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
-  max-width: 900px;
+  max-width: 1060px;
 }
 
 .skillCategoryCard {
@@ -889,7 +930,7 @@
 
 .serviceCardsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
   max-width: 960px;
 }
@@ -1319,6 +1360,39 @@
   background: #2a2c28;
 }
 
+.certificatePlaceholderBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 36px 20px;
+  gap: 12px;
+}
+
+.verifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(131, 92, 36, 0.12);
+  border: 1px solid rgba(131, 92, 36, 0.3);
+  border-radius: 999px;
+  color: #835c24;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.certificateNotice {
+  max-width: 440px;
+  margin: 0;
+  color: #555852;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
 .pdfNote {
   color: #7d8078;
   font-size: 0.85rem;
@@ -1381,17 +1455,50 @@
 
   .heroMain {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 36px;
   }
 
   .heroPortraitWrapper {
     order: -1;
-    justify-content: flex-start;
+    justify-content: center;
+    width: 100%;
   }
 
   .heroPortrait {
-    width: min(100%, 260px);
+    width: min(100%, 240px);
     aspect-ratio: 1 / 1;
+    margin: 0 auto;
+  }
+
+  .heroCopy {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .roleBadge {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .heroTitle {
+    text-align: center;
+  }
+
+  .heroLead {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .heroActions {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 440px;
   }
 
   .projectCard {
@@ -1400,6 +1507,23 @@
 
   .serviceCardsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .skillsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    width: 100%;
+  }
+
+  .skillsContent,
+  .projectIntro,
+  .aboutContent,
+  .backgroundContent,
+  .servicesContent,
+  .archiveContent,
+  .contactContent {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
   }
 }
 
@@ -1425,44 +1549,69 @@
     font-size: 0.65rem;
   }
 
+  .heroPortraitWrapper {
+    order: -1;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .heroPortrait {
+    width: min(100%, 200px);
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+    border-radius: 16px;
+  }
+
+  .heroCopy {
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+  }
+
+  .roleBadge {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 0.72rem;
+  }
+
   .heroTitle {
     font-size: clamp(2.4rem, 11vw, 3.8rem);
     line-height: 1.02;
     margin-bottom: 16px;
+    text-align: center;
   }
 
   .heroLead {
     font-size: 0.92rem;
     line-height: 1.6;
     margin-bottom: 24px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .heroActions {
     max-width: 100%;
     width: 100%;
+    margin: 0 auto;
   }
 
   .heroActionsRow {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
+    width: 100%;
   }
 
-  .primaryButton {
-    min-height: 44px;
-    font-size: 0.72rem;
-  }
-
-  .secondaryButton {
-    min-height: 42px;
-    padding: 0 10px;
-    font-size: 0.68rem;
-  }
-
-  .heroPortrait {
-    width: 180px;
-    aspect-ratio: 1 / 1;
-    border-radius: 16px;
+  .heroFooter {
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
   }
 
   .aboutSection,
@@ -1480,6 +1629,17 @@
   .sectionHeading {
     font-size: clamp(1.75rem, 7.5vw, 2.6rem);
     margin-bottom: 24px;
+  }
+
+  .eyebrow,
+  .sectionHeading,
+  .aboutDetails,
+  .projectDescription,
+  .itemDescription,
+  .serviceDesc {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
   }
 
   .aboutDetails {
@@ -1522,6 +1682,32 @@
 
   .itemTitle {
     font-size: 1.1rem;
+  }
+
+  .skillsGrid {
+    grid-template-columns: 1fr !important;
+    width: 100%;
+    gap: 16px;
+  }
+
+  .skillCategoryCard {
+    width: 100%;
+    min-width: 0;
+    padding: 20px 16px;
+    box-sizing: border-box;
+  }
+
+  .skillsPillWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .techChip {
+    font-size: 0.78rem;
+    padding: 5px 10px;
+    white-space: normal;
+    word-break: break-word;
   }
 
   .serviceCard {
