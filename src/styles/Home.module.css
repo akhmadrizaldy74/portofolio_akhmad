@@ -793,6 +793,28 @@
   margin-bottom: 12px;
 }
 
+.timelineTitleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.competentStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 999px;
+  color: #4ade80;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
 .itemTitle {
   margin: 0;
   font-size: 1.25rem;
@@ -1399,6 +1421,256 @@
 }
 
 /* ==========================================================================
+   BNSP DIGITAL ASSESSMENT CREDENTIAL CARD
+   ========================================================================== */
+
+.bnspCredentialCard {
+  width: 100%;
+  background: linear-gradient(180deg, #ffffff 0%, #faf8f2 100%);
+  border: 1px solid #d4cbb8;
+  border-radius: 12px;
+  padding: 24px 22px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+  color: #171817;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bnspCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed #d5cfc0;
+}
+
+.bnspEmblem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bnspSealIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: #171817;
+  color: #d8a85b;
+  border-radius: 10px;
+  border: 1px solid rgba(216, 168, 91, 0.3);
+  flex-shrink: 0;
+}
+
+.bnspOrgTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #171817;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+.bnspLicenseTitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: #835c24;
+  margin-top: 2px;
+}
+
+.bnspPassedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(22, 101, 52, 0.09);
+  border: 1.5px solid #16a34a;
+  border-radius: 999px;
+  color: #15803d;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bnspPassedDot {
+  color: #16a34a;
+  font-size: 0.85rem;
+  animation: bnspPulseDot 2s infinite ease-in-out;
+}
+
+@keyframes bnspPulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.85); }
+}
+
+.bnspBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bnspSchemeBox {
+  padding: 16px;
+  background: rgba(216, 168, 91, 0.08);
+  border: 1px solid rgba(216, 168, 91, 0.25);
+  border-radius: 8px;
+}
+
+.bnspSchemeLabel {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  color: #835c24;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.bnspSchemeTitle {
+  margin: 0 0 6px 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #171817;
+  letter-spacing: -0.02em;
+}
+
+.bnspStandardLabel {
+  display: block;
+  font-size: 0.8rem;
+  color: #555852;
+}
+
+.bnspStatusBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #f1f4f9;
+  border: 1px solid #c8d3e2;
+  border-left: 4px solid #2563eb;
+  border-radius: 6px;
+}
+
+.bnspStatusBannerIcon {
+  color: #2563eb;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.bnspStatusBannerContent {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #1e293b;
+}
+
+.bnspStatusBannerTitle {
+  display: block;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.bnspStatusBannerText {
+  margin: 0;
+  color: #334155;
+}
+
+.bnspUnitsSection {
+  margin-top: 4px;
+}
+
+.bnspUnitsHeading {
+  margin: 0 0 10px 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #171817;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-family: 'DM Mono', monospace;
+}
+
+.bnspUnitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bnspUnitItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: #2d312a;
+  background: #ffffff;
+  border: 1px solid #e3decb;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.bnspUnitCheck {
+  color: #15803d;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.bnspFooterNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #faf8f2;
+  border: 1px solid #e8e3d5;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #63665e;
+}
+
+.bnspFooterNotice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #835c24;
+}
+
+.bnspModalFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.bnspFooterBadge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(22, 101, 52, 0.1);
+  border: 1px solid rgba(22, 101, 52, 0.3);
+  border-radius: 6px;
+  color: #15803d;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bnspModalNote {
+  margin: 0;
+  color: #7d8078;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
    RESPONSIVE MEDIA QUERIES (TABLET & MOBILE)
    ========================================================================== */
 
@@ -1731,6 +2003,25 @@
     align-items: flex-start;
     gap: 12px;
     margin-top: 48px;
+  }
+
+  .bnspCredentialCard {
+    padding: 18px 14px;
+    gap: 14px;
+  }
+
+  .bnspCardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .bnspPassedBadge {
+    align-self: flex-start;
+  }
+
+  .bnspSchemeTitle {
+    font-size: 1.1rem;
   }
 }
 

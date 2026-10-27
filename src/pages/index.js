@@ -269,10 +269,35 @@ const timeline = [
     typeId: 'Sertifikasi dan Pelatihan',
     typeEn: 'Certification and Training',
     title: 'Sertifikasi Kompetensi BNSP: Analis Sistem (Systems Analyst)',
-    metaId: 'LSP Informatika • 2026 – 2029',
-    metaEn: 'LSP Informatika • 2026 – 2029 (Valid until 2029)',
-    textId: 'Sertifikasi kompetensi kerja nasional bidang Analis Sistem oleh LSP Informatika terlisensi BNSP, mencakup analisis kebutuhan sistem, pemodelan data & proses (UML/ERD), spesifikasi perangkat lunak, dan pengujian sistem.',
-    textEn: 'National competency certification in Systems Analysis issued by LSP Informatika licensed by BNSP, covering system requirements analysis, data and process modeling (UML/ERD), software specifications, and system verification.',
+    metaId: 'LSP Informatika • Asesmen 2026',
+    metaEn: 'LSP Informatika • Assessed 2026',
+    statusBadgeId: '✓ Selesai Ujikom • Dinyatakan Kompeten (Menunggu Blangko)',
+    statusBadgeEn: '✓ Assessment Passed • Competent (Issuance in Progress)',
+    calloutId: 'Lihat Kartu Keterangan Hasil Asesmen & Unit Kompetensi',
+    calloutEn: 'View Assessment Credential & Tested Units',
+    isBnspAssessment: true,
+    schemeId: 'Analis Sistem (Systems Analyst)',
+    schemeEn: 'Systems Analyst',
+    organization: 'Lembaga Sertifikasi Profesi (LSP) Informatika',
+    license: 'Badan Nasional Sertifikasi Profesi (BNSP)',
+    documentStatusId: 'Uji kompetensi (Ujikom) telah selesai ditempuh dan asesor merekomendasikan hasil KOMPETEN. Blangko sertifikat fisik resmi Garuda BNSP dan Surat Keterangan Lulus (SKL) saat ini sedang dalam proses pencetakan & penerbitan administratif oleh LSP Informatika.',
+    documentStatusEn: 'Competency assessment has been completed with assessor recommendation declared COMPETENT. The official national Garuda BNSP blank certificate and completion letter are currently in the administrative printing & issuance queue by LSP Informatika.',
+    competencyUnitsId: [
+      'Menganalisis Kebutuhan Sistem & Spesifikasi Perangkat Lunak (SRS)',
+      'Merancang Pemodelan Data & Skema Basis Data Relasional (ERD & RDBMS)',
+      'Merancang Arsitektur & Alur Proses Sistem (UML Use Case, Activity, Sequence)',
+      'Merumuskan Validasi Bisnis & Aturan Logika Sistem',
+      'Merencanakan dan Melaksanakan Pengujian Sistem (SIT & UAT)',
+    ],
+    competencyUnitsEn: [
+      'Analyze System Requirements & Software Requirements Specification (SRS)',
+      'Design Relational Data Modeling & Database Architecture (ERD & RDBMS)',
+      'Architect System Process Flows & UML Models (Use Case, Activity, Sequence)',
+      'Formulate Business Logic Rules & System Specifications',
+      'Plan and Execute System Verification & Testing (SIT & UAT)',
+    ],
+    textId: 'Uji kompetensi kerja nasional bidang Analis Sistem oleh LSP Informatika (terlisensi BNSP) telah selesai ditempuh dengan hasil rekomendasi asesor dinyatakan KOMPETEN. Cakupan asesmen meliputi analisis kebutuhan perangkat lunak, pemodelan data & proses sistem (UML/ERD), spesifikasi fungsional, dan pengujian sistem.',
+    textEn: 'National competency assessment for Systems Analyst by LSP Informatika (licensed by BNSP) has been completed with the assessor recommendation officially declared COMPETENT. Covers software requirements engineering, system data and process modeling (UML/ERD), functional specifications, and system verification.',
     pdfPath: null,
   },
   {
@@ -453,7 +478,11 @@ function CertificatePreview({ certificate, language }) {
   const [status, setStatus] = useState('loading')
 
   useEffect(() => {
-    if (!certificate || !certificate.pdfPath) {
+    if (!certificate || certificate.isBnspAssessment) {
+      return
+    }
+
+    if (!certificate.pdfPath) {
       setStatus('not_available')
       return
     }
@@ -497,6 +526,91 @@ function CertificatePreview({ certificate, language }) {
       loadingTask?.destroy()
     }
   }, [certificate])
+
+  if (certificate?.isBnspAssessment) {
+    return (
+      <div className={styles.bnspCredentialCard}>
+        <div className={styles.bnspCardHeader}>
+          <div className={styles.bnspEmblem}>
+            <div className={styles.bnspSealIcon} aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="6" />
+                <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+              </svg>
+            </div>
+            <div>
+              <div className={styles.bnspOrgTitle}>{certificate.organization}</div>
+              <div className={styles.bnspLicenseTitle}>
+                {language === 'id' ? 'Lisensi Badan Nasional Sertifikasi Profesi (BNSP)' : 'Licensed by National Professional Certification Authority (BNSP)'}
+              </div>
+            </div>
+          </div>
+          <div className={styles.bnspPassedBadge}>
+            <span className={styles.bnspPassedDot}>●</span>
+            <span>{language === 'id' ? 'DINYATAKAN KOMPETEN' : 'ASSESSED COMPETENT'}</span>
+          </div>
+        </div>
+
+        <div className={styles.bnspBody}>
+          <div className={styles.bnspSchemeBox}>
+            <span className={styles.bnspSchemeLabel}>
+              {language === 'id' ? 'SKEMA SERTIFIKASI OKUPASI NASIONAL' : 'NATIONAL OCCUPATIONAL CERTIFICATION SCHEME'}
+            </span>
+            <h3 className={styles.bnspSchemeTitle}>
+              {language === 'id' ? certificate.schemeId : certificate.schemeEn}
+            </h3>
+            <span className={styles.bnspStandardLabel}>
+              {language === 'id' ? 'Standar Acuan: SKKNI Bidang Teknologi Informasi & Komunikasi' : 'Standard: SKKNI Information & Communication Technology'}
+            </span>
+          </div>
+
+          <div className={styles.bnspStatusBanner}>
+            <div className={styles.bnspStatusBannerIcon}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            </div>
+            <div className={styles.bnspStatusBannerContent}>
+              <strong className={styles.bnspStatusBannerTitle}>
+                {language === 'id' ? 'Status Uji Kompetensi & Penerbitan Dokumen:' : 'Assessment & Document Issuance Status:'}
+              </strong>
+              <p className={styles.bnspStatusBannerText}>
+                {language === 'id' ? certificate.documentStatusId : certificate.documentStatusEn}
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.bnspUnitsSection}>
+            <h4 className={styles.bnspUnitsHeading}>
+              {language === 'id' ? 'Unit Kompetensi Inti yang Diujikan & Terverifikasi:' : 'Core Assessed & Verified Competency Units:'}
+            </h4>
+            <ul className={styles.bnspUnitsList}>
+              {(language === 'id' ? certificate.competencyUnitsId : certificate.competencyUnitsEn).map((unit, uIdx) => (
+                <li key={uIdx} className={styles.bnspUnitItem}>
+                  <span className={styles.bnspUnitCheck}>✓</span>
+                  <span>{unit}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className={styles.bnspFooterNotice}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <span>
+            {language === 'id'
+              ? 'Hasil asesmen ujikom telah resmi direkomendasikan Kompeten oleh Asesor LSP Informatika. File scan dokumen blangko garuda resmi BNSP serta Surat Keterangan Lulus (SKL) akan ditautkan langsung di modal ini segera setelah proses cetak/distribusi blangko selesai.'
+              : 'Assessment has been officially recommended as Competent by certified LSP Informatika Assessors. The scanned BNSP national certificate and completion letter will be directly attached here upon administrative issuance.'}
+          </span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.certificatePreview}>
@@ -835,7 +949,14 @@ export default function Home() {
                               role={isCertificate ? 'button' : undefined}
                             >
                               <div className={styles.timelineCardTop}>
-                                <h4 className={styles.itemTitle}>{item.title}</h4>
+                                <div className={styles.timelineTitleArea}>
+                                  <h4 className={styles.itemTitle}>{item.title}</h4>
+                                  {item.statusBadgeId && (
+                                    <span className={styles.competentStatusBadge}>
+                                      {language === 'id' ? item.statusBadgeId : item.statusBadgeEn}
+                                    </span>
+                                  )}
+                                </div>
                                 <span className={styles.itemMetaBadge}>
                                   {language === 'id' ? item.metaId : item.metaEn}
                                 </span>
@@ -855,9 +976,11 @@ export default function Home() {
                               {isCertificate && (
                                 <div className={styles.certificateCallout}>
                                   <span>
-                                    {item.pdfPath
-                                      ? (language === 'id' ? 'Lihat Pratinjau Sertifikat' : 'View Certificate Preview')
-                                      : (language === 'id' ? 'Lihat Informasi Sertifikasi' : 'View Credential Details')}
+                                    {item.calloutId
+                                      ? (language === 'id' ? item.calloutId : item.calloutEn)
+                                      : item.pdfPath
+                                        ? (language === 'id' ? 'Lihat Pratinjau Sertifikat' : 'View Certificate Preview')
+                                        : (language === 'id' ? 'Lihat Informasi Sertifikasi' : 'View Credential Details')}
                                   </span>
                                   <span>↗</span>
                                 </div>
@@ -1143,7 +1266,18 @@ export default function Home() {
 
                 <p className={styles.certificateDescription}>{language === 'id' ? selectedCertificate.textId : selectedCertificate.textEn}</p>
 
-                {selectedCertificate.pdfPath ? (
+                {selectedCertificate.isBnspAssessment ? (
+                  <div className={styles.bnspModalFooter}>
+                    <div className={styles.bnspFooterBadge}>
+                      ✓ {language === 'id' ? 'Hasil Asesmen: Rekomendasi Kompeten (K)' : 'Assessment Result: Assessor Recommendation: Competent (K)'}
+                    </div>
+                    <p className={styles.bnspModalNote}>
+                      {language === 'id'
+                        ? 'Salinan digital blangko garuda resmi BNSP & Surat Keterangan Lulus (SKL) akan ditautkan langsung di portofolio ini segera setelah diterbitkan oleh LSP Informatika.'
+                        : 'Official scanned BNSP certificate registration & completion letter will be linked here once issued by LSP Informatika.'}
+                    </p>
+                  </div>
+                ) : selectedCertificate.pdfPath ? (
                   <a className={styles.certificatePdfLink} href={selectedCertificate.pdfPath} target="_blank" rel="noreferrer">
                     <span>{language === 'id' ? 'Buka Dokumen PDF Asli' : 'Open Original PDF Document'}</span>
                     <span>↗</span>
