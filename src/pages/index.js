@@ -236,6 +236,24 @@ const timeline = [
     ],
   },
 
+  {
+    typeId: 'Pengalaman',
+    typeEn: 'Experience',
+    title: 'IMATIKA FT-KMUP',
+    metaId: 'Pengalaman Organisasi • Anggota Bidang 1 • 2022 – 2024',
+    metaEn: 'Organizational Experience • Board Member, Division 1 • 2022 – 2024',
+    textId: 'Pengalaman organisasi sebagai Anggota Bidang 1 dalam koordinasi kegiatan akademik, pengembangan keilmuan teknologi informasi, dan kolaborasi mahasiswa teknik informatika.',
+    textEn: 'Active board member in Division 1, coordinating academic activities, IT knowledge-sharing initiatives, and departmental engineering student programs.',
+    responsibilitiesId: [
+      'Mengkoordinasikan kegiatan akademik dan program pengembangan keilmuan teknologi informasi mahasiswa.',
+      'Memfasilitasi forum kolaborasi, workshop teknologi, dan kegiatan keorganisasian Teknik Informatika Universitas Pancasila.',
+    ],
+    responsibilitiesEn: [
+      'Coordinated academic initiatives and IT knowledge-sharing programs for engineering students.',
+      'Facilitated collaborative student forums, technical workshops, and departmental organizational programs at Universitas Pancasila.',
+    ],
+  },
+
   // EDUCATION
   {
     typeId: 'Pendidikan',
@@ -245,15 +263,6 @@ const timeline = [
     metaEn: 'Bachelor of Informatics Engineering (S.T.) • 2022 – 2026',
     textId: 'Fakultas Teknik, Program Studi Teknik Informatika. IPK: 3.64 / 4.00. Fokus akademik pada rekayasa perangkat lunak, arsitektur basis data, dan analisis sistem.',
     textEn: 'Faculty of Engineering, Informatics Engineering. GPA: 3.64 / 4.00. Academic focus on software engineering, database architectures, and systems analysis.',
-  },
-  {
-    typeId: 'Pendidikan',
-    typeEn: 'Education',
-    title: 'IMATIKA FT-KMUP',
-    metaId: 'Anggota Bidang 1 (Board Member, Division 1) • 2022 – 2024',
-    metaEn: 'Board Member, Division 1 • 2022 – 2024',
-    textId: 'Pengalaman organisasi sebagai Anggota Bidang 1 dalam koordinasi kegiatan akademik, pengembangan keilmuan teknologi informasi, dan kolaborasi mahasiswa teknik informatika.',
-    textEn: 'Active board member in Division 1, coordinating academic activities, IT knowledge-sharing initiatives, and departmental engineering student programs.',
   },
   {
     typeId: 'Pendidikan',
@@ -377,8 +386,8 @@ const timeline = [
 ]
 
 const timelineGroups = [
-  { key: 'experience', labelId: 'Pengalaman Kerja', labelEn: 'Work Experience', types: ['Pengalaman', 'Experience'] },
-  { key: 'education', labelId: 'Pendidikan', labelEn: 'Education', types: ['Pendidikan', 'Education'] },
+  { key: 'experience', labelId: 'Pengalaman Kerja & Organisasi', labelEn: 'Professional & Organizational Experience', types: ['Pengalaman', 'Experience'] },
+  { key: 'education', labelId: 'Pendidikan Formal', labelEn: 'Formal Education', types: ['Pendidikan', 'Education'] },
   { key: 'certificate', labelId: 'Sertifikasi & Pelatihan', labelEn: 'Certification & Training', types: ['Sertifikasi dan Pelatihan', 'Certification and Training'] },
 ]
 
