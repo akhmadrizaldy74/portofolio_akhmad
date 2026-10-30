@@ -1545,19 +1545,35 @@
   color: #555852;
 }
 
+.bnspMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(216, 168, 91, 0.35);
+  font-size: 0.8rem;
+  color: #444741;
+}
+
+.bnspMetaGrid strong {
+  color: #171817;
+  font-weight: 600;
+}
+
 .bnspStatusBanner {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  background: #f1f4f9;
-  border: 1px solid #c8d3e2;
-  border-left: 4px solid #2563eb;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 4px solid #16a34a;
   border-radius: 6px;
 }
 
 .bnspStatusBannerIcon {
-  color: #2563eb;
+  color: #16a34a;
   flex-shrink: 0;
   margin-top: 1px;
 }
