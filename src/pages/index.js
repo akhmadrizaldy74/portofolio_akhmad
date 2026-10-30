@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
+import { motion, useScroll, useSpring, useInView, AnimatePresence } from 'framer-motion'
 import styles from '@/styles/Home.module.css'
 
 const projects = [
@@ -563,13 +564,112 @@ function CertificatePreview({ certificate, language }) {
   )
 }
 
+function AnimatedNumber({ value, duration = 1.4, decimals = 2 }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-20px' })
+  const [displayValue, setDisplayValue] = useState('0.00')
+
+  useEffect(() => {
+    if (!isInView) return
+    const numericTarget = parseFloat(value)
+    if (isNaN(numericTarget)) {
+      setDisplayValue(value)
+      return
+    }
+
+    let startTime = null
+    let animationFrame
+
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp
+      const progress = Math.min((timestamp - startTime) / (duration * 1000), 1)
+      const ease = 1 - Math.pow(1 - progress, 3)
+      const current = (ease * numericTarget).toFixed(decimals)
+      setDisplayValue(current)
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(step)
+      } else {
+        setDisplayValue(numericTarget.toFixed(decimals))
+      }
+    }
+
+    animationFrame = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(animationFrame)
+  }, [isInView, value, duration, decimals])
+
+  return <span ref={ref}>{displayValue}</span>
+}
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [language, setLanguage] = useState('id')
   const [selectedCertificate, setSelectedCertificate] = useState(null)
   const text = copy[language]
 
+  const { scrollYProgress } = useScroll()
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  })
+
+  // Prevent browser jump on refresh & start clean from top
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual'
+      }
+      if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname)
+      }
+      window.scrollTo(0, 0)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setSelectedCertificate(null)
+      }
+    }
+    if (selectedCertificate) {
+      window.addEventListener('keydown', handleKeyDown)
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedCertificate])
+
   const closeMenu = () => setMenuOpen(false)
+
+  const handleNavClick = (e, targetId) => {
+    e.preventDefault()
+    closeMenu()
+    const element = document.getElementById(targetId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handleSpotlightMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`)
+    e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`)
+  }
+
+  const tickerItems = [
+    'C# / .NET 6+',
+    'ASP.NET Core Web API',
+    'PHP / Laravel',
+    'React.js',
+    'Flutter Mobile',
+    'Microsoft SQL Server',
+    'MySQL Relational DB',
+    'BNSP Certified Systems Analyst',
+    'RESTful API Architecture',
+    'Figma UI/UX Systems',
+    'SIT & UAT Quality Assurance',
+    'Docker & Git',
+  ]
 
   return (
     <>
@@ -583,6 +683,7 @@ export default function Home() {
       </Head>
 
       <main className={styles.page}>
+        <motion.div className={styles.scrollProgressBar} style={{ scaleX }} />
         <div className={styles.container}>
           {/* TOPBAR */}
           <header className={styles.topbar}>
@@ -591,18 +692,44 @@ export default function Home() {
             </a>
 
             <nav className={`${styles.nav} ${menuOpen ? styles.navOpen : ''}`} aria-label="Main navigation" id="main-navigation">
-              <a href="#about" className={styles.navItem} onClick={closeMenu}>{text.about}</a>
-              <a href="#work" className={styles.navItem} onClick={closeMenu}>{text.work}</a>
-              <a href="#background" className={styles.navItem} onClick={closeMenu}>{text.background}</a>
-              <a href="#skills" className={styles.navItem} onClick={closeMenu}>{text.skillsNav}</a>
-              <a href="#contact" className={styles.navItem} onClick={closeMenu}>{text.contact}</a>
+              <a href="#about" className={styles.navItem} onClick={(e) => handleNavClick(e, 'about')}>{text.about}</a>
+              <a href="#work" className={styles.navItem} onClick={(e) => handleNavClick(e, 'work')}>{text.work}</a>
+              <a href="#background" className={styles.navItem} onClick={(e) => handleNavClick(e, 'background')}>{text.background}</a>
+              <a href="#skills" className={styles.navItem} onClick={(e) => handleNavClick(e, 'skills')}>{text.skillsNav}</a>
+              <a href="#contact" className={styles.navItem} onClick={(e) => handleNavClick(e, 'contact')}>{text.contact}</a>
             </nav>
 
             <div className={styles.topbarRight}>
               <div className={styles.languageSwitch} aria-label="Language selector">
-                <button type="button" className={language === 'id' ? styles.languageActive : ''} onClick={() => setLanguage('id')}>ID</button>
+                <button
+                  type="button"
+                  className={`${styles.langBtn} ${language === 'id' ? styles.languageActiveText : ''}`}
+                  onClick={() => setLanguage('id')}
+                >
+                  {language === 'id' && (
+                    <motion.span
+                      layoutId="activeLangPill"
+                      className={styles.activeLangPill}
+                      transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                    />
+                  )}
+                  <span className={styles.langBtnLabel}>ID</span>
+                </button>
                 <span className={styles.langDivider}>/</span>
-                <button type="button" className={language === 'en' ? styles.languageActive : ''} onClick={() => setLanguage('en')}>EN</button>
+                <button
+                  type="button"
+                  className={`${styles.langBtn} ${language === 'en' ? styles.languageActiveText : ''}`}
+                  onClick={() => setLanguage('en')}
+                >
+                  {language === 'en' && (
+                    <motion.span
+                      layoutId="activeLangPill"
+                      className={styles.activeLangPill}
+                      transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                    />
+                  )}
+                  <span className={styles.langBtnLabel}>EN</span>
+                </button>
               </div>
 
               <button
@@ -621,24 +748,62 @@ export default function Home() {
 
           {/* HERO */}
           <section id="top" className={styles.hero}>
-            <div className={styles.heroHeader}>
+            <div className={styles.ambientGlowContainer} aria-hidden="true">
+              <div className={styles.ambientGlowPrimary} />
+              <div className={styles.ambientGlowSecondary} />
+            </div>
+
+            <motion.div
+              className={styles.heroHeader}
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
               <span className={styles.heroTagNumber}>01 // 11</span>
               <div className={styles.availabilityBadge}>
-                <span className={styles.pulseDot} />
+                <div className={styles.pulseWrapper}>
+                  <span className={styles.pulseDot} />
+                  <span className={styles.pulseRing} />
+                  <span className={`${styles.pulseRing} ${styles.pulseRingDelay}`} />
+                </div>
                 <span>{text.available}</span>
               </div>
-            </div>
+            </motion.div>
 
             <div className={styles.heroMain}>
               <div className={styles.heroCopy}>
-                <div className={styles.roleBadge}>{text.role}</div>
-                <h1 className={styles.heroTitle}>
+                <motion.div
+                  className={styles.roleBadge}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {text.role}
+                </motion.div>
+                <motion.h1
+                  className={styles.heroTitle}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                >
                   Akhmad<br />
                   <span className={styles.heroTitleAccent}>Rizaldy</span>
-                </h1>
-                <p className={styles.heroLead}>{text.heroLead}</p>
+                </motion.h1>
+                <motion.p
+                  className={styles.heroLead}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.65, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {text.heroLead}
+                </motion.p>
 
-                <div className={styles.heroActions}>
+                <motion.div
+                  className={styles.heroActions}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                >
                   <a href="/CV_Akhmad_Rizaldy.pdf" className={styles.primaryButton} download>
                     <span>{text.download}</span>
                     <span className={styles.btnIcon}>↓</span>
@@ -653,10 +818,15 @@ export default function Home() {
                       <span className={styles.btnIcon}>↘</span>
                     </a>
                   </div>
-                </div>
+                </motion.div>
               </div>
 
-              <div className={styles.heroPortraitWrapper}>
+              <motion.div
+                className={styles.heroPortraitWrapper}
+                initial={{ opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <div className={styles.heroPortrait}>
                   <Image
                     src="/images/profile/foto_akhmad.png"
@@ -670,18 +840,42 @@ export default function Home() {
                     <span>JAKARTA, ID</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            <div className={styles.heroFooter}>
+            <motion.div
+              className={styles.heroFooter}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.45 }}
+            >
               <span>{text.explore}</span>
               <span className={styles.scrollLine} />
               <span>2026 EDITION</span>
-            </div>
+            </motion.div>
           </section>
 
+          {/* INFINITE TECH TICKER / MARQUEE (BUSINESS TECH BAND) */}
+          <div className={styles.marqueeContainer} aria-hidden="true">
+            <div className={styles.marqueeTrack}>
+              {[...tickerItems, ...tickerItems].map((item, idx) => (
+                <span key={idx} className={styles.marqueeItem}>
+                  <span className={styles.marqueeDot}>✦</span>
+                  <span>{item}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
           {/* ABOUT */}
-          <section id="about" className={styles.aboutSection}>
+          <motion.section
+            id="about"
+            className={styles.aboutSection}
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className={styles.sectionRail}>
               <span className={styles.railIndex}>02</span>
               <span className={styles.railTitle}>{text.profile}</span>
@@ -704,7 +898,9 @@ export default function Home() {
 
               <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
-                  <strong className={styles.statNumber}>3.64</strong>
+                  <strong className={styles.statNumber}>
+                    <AnimatedNumber value="3.64" />
+                  </strong>
                   <span className={styles.statText}>
                     {language === 'id' ? 'IPK Kumulatif (Skala 4.00)' : 'Cumulative GPA (out of 4.00)'}
                   </span>
@@ -717,10 +913,17 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* SELECTED WORK */}
-          <section id="work" className={styles.projectSection}>
+          <motion.section
+            id="work"
+            className={styles.projectSection}
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.08 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className={styles.sectionRail}>
               <span className={styles.railIndex}>03</span>
               <span className={styles.railTitle}>{text.workLabel}</span>
@@ -730,8 +933,16 @@ export default function Home() {
               <h2 className={styles.sectionHeading}>{text.workTitle}</h2>
 
               <div className={styles.projectList}>
-                {projects.map((project) => (
-                  <article key={project.titleId} className={styles.projectCard}>
+                {projects.map((project, pIdx) => (
+                  <motion.article
+                    key={project.titleId}
+                    className={`${styles.projectCard} ${styles.spotlightCard}`}
+                    onMouseMove={handleSpotlightMove}
+                    initial={{ opacity: 0, y: 35 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.12 }}
+                    transition={{ duration: 0.65, delay: pIdx * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  >
                     <div className={styles.projectVisual}>
                       <Image
                         src={project.image}
@@ -830,14 +1041,21 @@ export default function Home() {
                         )}
                       </div>
                     </div>
-                  </article>
+                  </motion.article>
                 ))}
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* BACKGROUND / TIMELINE */}
-          <section id="background" className={styles.backgroundSection}>
+          <motion.section
+            id="background"
+            className={styles.backgroundSection}
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.08 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className={styles.sectionRail}>
               <span className={styles.railIndex}>04</span>
               <span className={styles.railTitle}>{text.background}</span>
@@ -858,13 +1076,17 @@ export default function Home() {
                     <div className={styles.timelineList}>
                       {timeline
                         .filter((item) => group.types.includes(language === 'id' ? item.typeId : item.typeEn))
-                        .map((item) => {
+                        .map((item, tIdx) => {
                           const isCertificate = group.key === 'certificate'
 
                           return (
-                            <article
+                            <motion.article
                               key={`${item.title}-${item.metaEn}`}
                               className={`${styles.timelineCard} ${isCertificate ? styles.timelineCardInteractive : ''}`}
+                              initial={{ opacity: 0, y: 20 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true, amount: 0.1 }}
+                              transition={{ duration: 0.5, delay: tIdx * 0.05, ease: [0.16, 1, 0.3, 1] }}
                               onClick={isCertificate ? () => setSelectedCertificate(item) : undefined}
                               onKeyDown={isCertificate ? (event) => { if (event.key === 'Enter' || event.key === ' ') setSelectedCertificate(item) } : undefined}
                               tabIndex={isCertificate ? 0 : undefined}
@@ -907,7 +1129,7 @@ export default function Home() {
                                   <span>↗</span>
                                 </div>
                               )}
-                            </article>
+                            </motion.article>
                           )
                         })}
                     </div>
@@ -915,10 +1137,17 @@ export default function Home() {
                 ))}
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* TECH STACK & TOOLS (PILL CHIPS) */}
-          <section id="skills" className={styles.skillsSection}>
+          <motion.section
+            id="skills"
+            className={styles.skillsSection}
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className={styles.sectionRail}>
               <span className={styles.railIndex}>05</span>
               <span className={styles.railTitle}>{text.skillsLabel}</span>
@@ -933,20 +1162,34 @@ export default function Home() {
                       {language === 'id' ? category.titleId : category.titleEn}
                     </h4>
                     <div className={styles.skillsPillWrapper}>
-                      {category.skills.map((skill) => (
-                        <span key={skill} className={styles.techChip}>
+                      {category.skills.map((skill, sIdx) => (
+                        <motion.span
+                          key={skill}
+                          className={styles.techChip}
+                          initial={{ opacity: 0, scale: 0.92 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.3, delay: sIdx * 0.025 }}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                        >
                           {skill}
-                        </span>
+                        </motion.span>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* SERVICES */}
-          <section className={styles.servicesSection}>
+          <motion.section
+            className={styles.servicesSection}
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.12 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className={styles.sectionRail}>
               <span className={styles.railIndex}>06</span>
               <span className={styles.railTitle}>{text.servicesLabel}</span>
@@ -955,7 +1198,14 @@ export default function Home() {
               <p className={styles.eyebrow}>{text.servicesIntro}</p>
 
               <div className={styles.serviceCardsGrid}>
-                <article className={styles.serviceCard}>
+                <motion.article
+                  className={`${styles.serviceCard} ${styles.spotlightCard}`}
+                  onMouseMove={handleSpotlightMove}
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.5, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+                >
                   <div className={styles.serviceHeader}>
                     <span className={styles.serviceNum}>01</span>
                     <span className={styles.serviceDot} />
@@ -968,9 +1218,16 @@ export default function Home() {
                       ? 'Membangun aplikasi web responsif berskala enterprise dengan arsitektur C# (.NET 6+), PHP/Laravel, dan antarmuka interaktif React.js atau Tailwind CSS.'
                       : 'Building scalable enterprise web applications with C# (.NET 6+), PHP/Laravel, and responsive interactive interfaces in React.js and Tailwind CSS.'}
                   </p>
-                </article>
+                </motion.article>
 
-                <article className={styles.serviceCard}>
+                <motion.article
+                  className={`${styles.serviceCard} ${styles.spotlightCard}`}
+                  onMouseMove={handleSpotlightMove}
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.5, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+                >
                   <div className={styles.serviceHeader}>
                     <span className={styles.serviceNum}>02</span>
                     <span className={styles.serviceDot} />
@@ -983,9 +1240,16 @@ export default function Home() {
                       ? 'Merancang skema relasional terstruktur (SQL Server & MySQL), stored procedures, optimasi kueri T-SQL, serta integrasi endpoint RESTful API terstandarisasi.'
                       : 'Designing relational schemas (SQL Server & MySQL), stored procedures, T-SQL query optimization, and standardized RESTful API endpoints.'}
                   </p>
-                </article>
+                </motion.article>
 
-                <article className={styles.serviceCard}>
+                <motion.article
+                  className={`${styles.serviceCard} ${styles.spotlightCard}`}
+                  onMouseMove={handleSpotlightMove}
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.5, delay: 0.19, ease: [0.16, 1, 0.3, 1] }}
+                >
                   <div className={styles.serviceHeader}>
                     <span className={styles.serviceNum}>03</span>
                     <span className={styles.serviceDot} />
@@ -998,9 +1262,16 @@ export default function Home() {
                       ? 'Mengembangkan aplikasi mobile Flutter dengan performa mulus, sinkronisasi RESTful API real-time, dan manajemen state aplikasi yang efisien.'
                       : 'Crafting fluid Flutter mobile applications with smooth native performance, real-time RESTful API synchronization, and clean state management.'}
                   </p>
-                </article>
+                </motion.article>
 
-                <article className={styles.serviceCard}>
+                <motion.article
+                  className={`${styles.serviceCard} ${styles.spotlightCard}`}
+                  onMouseMove={handleSpotlightMove}
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.5, delay: 0.26, ease: [0.16, 1, 0.3, 1] }}
+                >
                   <div className={styles.serviceHeader}>
                     <span className={styles.serviceNum}>04</span>
                     <span className={styles.serviceDot} />
@@ -1013,13 +1284,19 @@ export default function Home() {
                       ? 'Menyusun spesifikasi kebutuhan perangkat lunak, diagram sistem (UML, ERD, flowcharts), prototipe desain Figma, serta pengujian SIT & UAT.'
                       : 'Documenting software requirements, system modeling (UML, ERD, flowcharts), high-fidelity Figma UI/UX prototyping, and SIT/UAT validation.'}
                   </p>
-                </article>
+                </motion.article>
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* LANGUAGES & VALUES */}
-          <section className={styles.archiveSection}>
+          <motion.section
+            className={styles.archiveSection}
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className={styles.sectionRail}>
               <span className={styles.railIndex}>07</span>
               <span className={styles.railTitle}>{text.archiveLabel}</span>
@@ -1047,10 +1324,16 @@ export default function Home() {
                 </p>
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* PROFESSIONAL STATEMENT */}
-          <section className={styles.testimonialSection}>
+          <motion.section
+            className={styles.testimonialSection}
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className={styles.sectionRail}>
               <span className={styles.railIndex}>08</span>
               <span className={styles.railTitle}>{text.testimonialLabel}</span>
@@ -1067,10 +1350,16 @@ export default function Home() {
                 <span>Software Developer & Systems Analyst</span>
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* CAPABILITIES */}
-          <section className={styles.capabilitySection}>
+          <motion.section
+            className={styles.capabilitySection}
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className={styles.sectionRail}>
               <span className={styles.railIndex}>09</span>
               <span className={styles.railTitle}>{text.capabilitiesLabel}</span>
@@ -1079,19 +1368,33 @@ export default function Home() {
               <p className={styles.eyebrow}>{text.capabilitiesIntro}</p>
               <div className={styles.capabilityList}>
                 {capabilities.map((item, index) => (
-                  <div key={item.en} className={styles.capabilityItem}>
+                  <motion.div
+                    key={item.en}
+                    className={styles.capabilityItem}
+                    initial={{ opacity: 0, x: -16 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.45, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                  >
                     <span className={styles.capabilityNum}>0{index + 1}</span>
                     <span className={styles.capabilityName}>
                       {language === 'id' ? item.id : item.en}
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* CONTACT & FOOTER */}
-          <footer id="contact" className={styles.contactSection}>
+          <motion.footer
+            id="contact"
+            className={styles.contactSection}
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.12 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className={styles.sectionRail}>
               <span className={styles.railIndex}>10</span>
               <span className={styles.railTitle}>{text.contactLabel}</span>
@@ -1114,192 +1417,259 @@ export default function Home() {
               <p className={styles.contactNote}>{text.contactIntro}</p>
 
               <div className={styles.contactGrid}>
-                <a href="mailto:akhmadrizaldy74@gmail.com" className={styles.contactCard}>
+                <motion.a
+                  href="mailto:akhmadrizaldy74@gmail.com"
+                  className={styles.contactCard}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: 0.04 }}
+                  whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                >
                   <span className={styles.contactLabel}>{text.email}</span>
                   <strong className={styles.contactValue}>akhmadrizaldy74@gmail.com</strong>
                   <span className={styles.contactArrow}>↗</span>
-                </a>
+                </motion.a>
 
-                <a href="https://wa.me/6287830665027" target="_blank" rel="noreferrer" className={styles.contactCard}>
+                <motion.a
+                  href="https://wa.me/6287830665027"
+                  target="_blank"
+                  rel="noreferrer"
+                  className={styles.contactCard}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: 0.08 }}
+                  whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                >
                   <span className={styles.contactLabel}>{text.whatsapp}</span>
                   <strong className={styles.contactValue}>+62 878 3066 5027</strong>
                   <span className={styles.contactArrow}>↗</span>
-                </a>
+                </motion.a>
 
-                <a href="https://github.com/akhmadrizaldy74" target="_blank" rel="noreferrer" className={styles.contactCard}>
+                <motion.a
+                  href="https://github.com/akhmadrizaldy74"
+                  target="_blank"
+                  rel="noreferrer"
+                  className={styles.contactCard}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: 0.12 }}
+                  whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                >
                   <span className={styles.contactLabel}>{text.github}</span>
                   <strong className={styles.contactValue}>github.com/akhmadrizaldy74</strong>
                   <span className={styles.contactArrow}>↗</span>
-                </a>
+                </motion.a>
 
-                <a href="https://linkedin.com/in/akhmad-rizaldy74" target="_blank" rel="noreferrer" className={styles.contactCard}>
+                <motion.a
+                  href="https://linkedin.com/in/akhmad-rizaldy74"
+                  target="_blank"
+                  rel="noreferrer"
+                  className={styles.contactCard}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: 0.16 }}
+                  whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                >
                   <span className={styles.contactLabel}>{text.linkedin}</span>
                   <strong className={styles.contactValue}>linkedin.com/in/akhmad-rizaldy74</strong>
                   <span className={styles.contactArrow}>↗</span>
-                </a>
+                </motion.a>
 
-                <a href="/CV_Akhmad_Rizaldy.pdf" download className={styles.contactCard}>
+                <motion.a
+                  href="/CV_Akhmad_Rizaldy.pdf"
+                  download
+                  className={styles.contactCard}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: 0.2 }}
+                  whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                >
                   <span className={styles.contactLabel}>{text.cv}</span>
                   <strong className={styles.contactValue}>{text.download}</strong>
                   <span className={styles.contactArrow}>↓</span>
-                </a>
+                </motion.a>
 
-                <div className={styles.contactCardStatic}>
+                <motion.div
+                  className={styles.contactCardStatic}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: 0.24 }}
+                >
                   <span className={styles.contactLabel}>{text.city}</span>
                   <strong className={styles.contactValue}>
                     {language === 'id' ? 'Jakarta Timur, DKI Jakarta' : 'East Jakarta, Indonesia'}
                   </strong>
-                </div>
+                </motion.div>
               </div>
 
               <div className={styles.footerBottom}>
                 <span>© {new Date().getFullYear()} AKHMAD RIZALDY</span>
                 <span>BUILT WITH NEXT.JS & PERFORMANCE FIRST</span>
-                <a href="#top" className={styles.backToTopBtn}>
+                <a href="#top" className={styles.backToTopBtn} onClick={(e) => handleNavClick(e, 'top')}>
                   {language === 'id' ? 'Kembali ke atas ↑' : 'Back to top ↑'}
                 </a>
               </div>
             </div>
-          </footer>
+          </motion.footer>
 
           {/* CERTIFICATE MODAL */}
-          {selectedCertificate && (
-            <div className={styles.modalBackdrop} role="presentation" onClick={() => setSelectedCertificate(null)}>
-              <section
-                className={styles.certificateModal}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="certificate-title"
-                onClick={(event) => event.stopPropagation()}
+          <AnimatePresence>
+            {selectedCertificate && (
+              <motion.div
+                className={styles.modalBackdrop}
+                role="presentation"
+                onClick={() => setSelectedCertificate(null)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
               >
-                <button
-                  type="button"
-                  className={styles.modalClose}
-                  onClick={() => setSelectedCertificate(null)}
-                  aria-label={language === 'id' ? 'Tutup detail sertifikasi' : 'Close certificate details'}
+                <motion.section
+                  className={styles.certificateModal}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="certificate-title"
+                  onClick={(event) => event.stopPropagation()}
+                  initial={{ opacity: 0, scale: 0.94, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.94, y: 20 }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 320 }}
                 >
-                  ✕
-                </button>
-                <p className={styles.eyebrow}>{language === 'id' ? 'Sertifikasi & Pelatihan' : 'Certification & Training'}</p>
-                <h2 id="certificate-title" className={styles.modalTitle}>{selectedCertificate.title}</h2>
-                <p className={styles.modalMeta}>{language === 'id' ? selectedCertificate.metaId : selectedCertificate.metaEn}</p>
+                  <button
+                    type="button"
+                    className={styles.modalClose}
+                    onClick={() => setSelectedCertificate(null)}
+                    aria-label={language === 'id' ? 'Tutup detail sertifikasi' : 'Close certificate details'}
+                  >
+                    ✕
+                  </button>
+                  <p className={styles.eyebrow}>{language === 'id' ? 'Sertifikasi & Pelatihan' : 'Certification & Training'}</p>
+                  <h2 id="certificate-title" className={styles.modalTitle}>{selectedCertificate.title}</h2>
+                  <p className={styles.modalMeta}>{language === 'id' ? selectedCertificate.metaId : selectedCertificate.metaEn}</p>
 
-                <CertificatePreview certificate={selectedCertificate} language={language} />
+                  <CertificatePreview certificate={selectedCertificate} language={language} />
 
-                <p className={styles.certificateDescription}>{language === 'id' ? selectedCertificate.textId : selectedCertificate.textEn}</p>
+                  <p className={styles.certificateDescription}>{language === 'id' ? selectedCertificate.textId : selectedCertificate.textEn}</p>
 
-                {selectedCertificate.isBnspAssessment && (
-                  <div className={styles.bnspCredentialCard}>
-                    <div className={styles.bnspCardHeader}>
-                      <div className={styles.bnspEmblem}>
-                        <div className={styles.bnspSealIcon} aria-hidden="true">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="8" r="6" />
-                            <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className={styles.bnspOrgTitle}>{selectedCertificate.organization}</div>
-                          <div className={styles.bnspLicenseTitle}>
-                            {language === 'id' ? 'Lisensi Badan Nasional Sertifikasi Profesi (BNSP) • BNSP-LSP-317-ID' : 'Licensed by National Professional Certification Authority (BNSP) • BNSP-LSP-317-ID'}
+                  {selectedCertificate.isBnspAssessment && (
+                    <div className={styles.bnspCredentialCard}>
+                      <div className={styles.bnspCardHeader}>
+                        <div className={styles.bnspEmblem}>
+                          <div className={styles.bnspSealIcon} aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="8" r="6" />
+                              <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+                            </svg>
+                          </div>
+                          <div>
+                            <div className={styles.bnspOrgTitle}>{selectedCertificate.organization}</div>
+                            <div className={styles.bnspLicenseTitle}>
+                              {language === 'id' ? 'Lisensi Badan Nasional Sertifikasi Profesi (BNSP) • BNSP-LSP-317-ID' : 'Licensed by National Professional Certification Authority (BNSP) • BNSP-LSP-317-ID'}
+                            </div>
                           </div>
                         </div>
+                        <div className={styles.bnspPassedBadge}>
+                          <span className={styles.bnspPassedDot}>●</span>
+                          <span>{language === 'id' ? 'DINYATAKAN KOMPETEN' : 'ASSESSED COMPETENT'}</span>
+                        </div>
                       </div>
-                      <div className={styles.bnspPassedBadge}>
-                        <span className={styles.bnspPassedDot}>●</span>
-                        <span>{language === 'id' ? 'DINYATAKAN KOMPETEN' : 'ASSESSED COMPETENT'}</span>
-                      </div>
-                    </div>
 
-                    <div className={styles.bnspBody}>
-                      <div className={styles.bnspSchemeBox}>
-                        <span className={styles.bnspSchemeLabel}>
-                          {language === 'id' ? 'SURAT KETERANGAN HASIL ASESMEN RESMI (SKHA)' : 'OFFICIAL ASSESSMENT RESULT CERTIFICATE (SKHA)'}
+                      <div className={styles.bnspBody}>
+                        <div className={styles.bnspSchemeBox}>
+                          <span className={styles.bnspSchemeLabel}>
+                            {language === 'id' ? 'SURAT KETERANGAN HASIL ASESMEN RESMI (SKHA)' : 'OFFICIAL ASSESSMENT RESULT CERTIFICATE (SKHA)'}
+                          </span>
+                          <h3 className={styles.bnspSchemeTitle}>
+                            {language === 'id' ? selectedCertificate.schemeId : selectedCertificate.schemeEn}
+                          </h3>
+                          <span className={styles.bnspStandardLabel}>
+                            {language === 'id' ? 'Standar Acuan: SKKNI Bidang Teknologi Informasi & Komunikasi' : 'Standard: SKKNI Information & Communication Technology'}
+                          </span>
+                          <div className={styles.bnspMetaGrid}>
+                            <div>
+                              <strong>{language === 'id' ? 'No. Dokumen:' : 'Doc No:'}</strong> {selectedCertificate.documentNumber}
+                            </div>
+                            <div>
+                              <strong>{language === 'id' ? 'Tgl. Asesmen:' : 'Assessment Date:'}</strong> {language === 'id' ? selectedCertificate.assessmentDateId : selectedCertificate.assessmentDateEn}
+                            </div>
+                            <div>
+                              <strong>{language === 'id' ? 'Tgl. Terbit:' : 'Issue Date:'}</strong> {language === 'id' ? selectedCertificate.issueDateId : selectedCertificate.issueDateEn}
+                            </div>
+                            <div>
+                              <strong>{language === 'id' ? 'Ketua LSP:' : 'LSP Director:'}</strong> {selectedCertificate.assessorSignatory}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className={styles.bnspStatusBanner}>
+                          <div className={styles.bnspStatusBannerIcon}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10" />
+                              <polyline points="9 11 12 14 22 4" />
+                              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                            </svg>
+                          </div>
+                          <div className={styles.bnspStatusBannerContent}>
+                            <strong className={styles.bnspStatusBannerTitle}>
+                              {language === 'id' ? 'Status Hasil Asesmen & Keabsahan Dokumen:' : 'Assessment Decision & Document Verification Status:'}
+                            </strong>
+                            <p className={styles.bnspStatusBannerText}>
+                              {language === 'id' ? selectedCertificate.documentStatusId : selectedCertificate.documentStatusEn}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className={styles.bnspUnitsSection}>
+                          <h4 className={styles.bnspUnitsHeading}>
+                            {language === 'id' ? 'Unit Kompetensi Inti yang Diujikan & Terverifikasi:' : 'Core Assessed & Verified Competency Units:'}
+                          </h4>
+                          <ul className={styles.bnspUnitsList}>
+                            {(language === 'id' ? selectedCertificate.competencyUnitsId : selectedCertificate.competencyUnitsEn).map((unit, uIdx) => (
+                              <li key={uIdx} className={styles.bnspUnitItem}>
+                                <span className={styles.bnspUnitCheck}>✓</span>
+                                <span>{unit}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className={styles.bnspFooterNotice}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <span>
+                          {language === 'id'
+                            ? 'Dokumen resmi terverifikasi dengan QR Code keaslian LSP Informatika. Digunakan sebagai bukti sah pemenuhan kualifikasi kompetensi kerja nasional Analis Sistem sambil menunggu distribusi blangko cetak fisik sertifikat garuda dari BNSP.'
+                            : 'Official document verified with LSP Informatika QR authentication code. Serves as official legal proof of national Systems Analyst occupational qualification while awaiting the physical Garuda certificate issuance by BNSP.'}
                         </span>
-                        <h3 className={styles.bnspSchemeTitle}>
-                          {language === 'id' ? selectedCertificate.schemeId : selectedCertificate.schemeEn}
-                        </h3>
-                        <span className={styles.bnspStandardLabel}>
-                          {language === 'id' ? 'Standar Acuan: SKKNI Bidang Teknologi Informasi & Komunikasi' : 'Standard: SKKNI Information & Communication Technology'}
-                        </span>
-                        <div className={styles.bnspMetaGrid}>
-                          <div>
-                            <strong>{language === 'id' ? 'No. Dokumen:' : 'Doc No:'}</strong> {selectedCertificate.documentNumber}
-                          </div>
-                          <div>
-                            <strong>{language === 'id' ? 'Tgl. Asesmen:' : 'Assessment Date:'}</strong> {language === 'id' ? selectedCertificate.assessmentDateId : selectedCertificate.assessmentDateEn}
-                          </div>
-                          <div>
-                            <strong>{language === 'id' ? 'Tgl. Terbit:' : 'Issue Date:'}</strong> {language === 'id' ? selectedCertificate.issueDateId : selectedCertificate.issueDateEn}
-                          </div>
-                          <div>
-                            <strong>{language === 'id' ? 'Ketua LSP:' : 'LSP Director:'}</strong> {selectedCertificate.assessorSignatory}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.bnspStatusBanner}>
-                        <div className={styles.bnspStatusBannerIcon}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="9 11 12 14 22 4" />
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                          </svg>
-                        </div>
-                        <div className={styles.bnspStatusBannerContent}>
-                          <strong className={styles.bnspStatusBannerTitle}>
-                            {language === 'id' ? 'Status Hasil Asesmen & Keabsahan Dokumen:' : 'Assessment Decision & Document Verification Status:'}
-                          </strong>
-                          <p className={styles.bnspStatusBannerText}>
-                            {language === 'id' ? selectedCertificate.documentStatusId : selectedCertificate.documentStatusEn}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className={styles.bnspUnitsSection}>
-                        <h4 className={styles.bnspUnitsHeading}>
-                          {language === 'id' ? 'Unit Kompetensi Inti yang Diujikan & Terverifikasi:' : 'Core Assessed & Verified Competency Units:'}
-                        </h4>
-                        <ul className={styles.bnspUnitsList}>
-                          {(language === 'id' ? selectedCertificate.competencyUnitsId : selectedCertificate.competencyUnitsEn).map((unit, uIdx) => (
-                            <li key={uIdx} className={styles.bnspUnitItem}>
-                              <span className={styles.bnspUnitCheck}>✓</span>
-                              <span>{unit}</span>
-                            </li>
-                          ))}
-                        </ul>
                       </div>
                     </div>
+                  )}
 
-                    <div className={styles.bnspFooterNotice}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                      </svg>
-                      <span>
-                        {language === 'id'
-                          ? 'Dokumen resmi terverifikasi dengan QR Code keaslian LSP Informatika. Digunakan sebagai bukti sah pemenuhan kualifikasi kompetensi kerja nasional Analis Sistem sambil menunggu distribusi blangko cetak fisik sertifikat garuda dari BNSP.'
-                          : 'Official document verified with LSP Informatika QR authentication code. Serves as official legal proof of national Systems Analyst occupational qualification while awaiting the physical Garuda certificate issuance by BNSP.'}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {selectedCertificate.pdfPath ? (
-                  <a className={styles.certificatePdfLink} href={selectedCertificate.pdfPath} target="_blank" rel="noreferrer">
-                    <span>{language === 'id' ? 'Buka Dokumen PDF Asli (SKHA)' : 'Open Original PDF Document (SKHA)'}</span>
-                    <span>↗</span>
-                  </a>
-                ) : (
-                  <p className={styles.pdfNote}>
-                    {language === 'id'
-                      ? 'Dokumen sertifikasi terdaftar dan diverifikasi secara resmi. Berkas PDF asli akan dihubungkan setelah file diunggah.'
-                      : 'Certification is officially registered and verified. The original PDF document will be linked once the digital file is uploaded.'}
-                  </p>
-                )}
-              </section>
-            </div>
-          )}
+                  {selectedCertificate.pdfPath ? (
+                    <a className={styles.certificatePdfLink} href={selectedCertificate.pdfPath} target="_blank" rel="noreferrer">
+                      <span>{language === 'id' ? 'Buka Dokumen PDF Asli (SKHA)' : 'Open Original PDF Document (SKHA)'}</span>
+                      <span>↗</span>
+                    </a>
+                  ) : (
+                    <p className={styles.pdfNote}>
+                      {language === 'id'
+                        ? 'Dokumen sertifikasi terdaftar dan diverifikasi secara resmi. Berkas PDF asli akan dihubungkan setelah file diunggah.'
+                        : 'Certification is officially registered and verified. The original PDF document will be linked once the digital file is uploaded.'}
+                    </p>
+                  )}
+                </motion.section>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </main>
     </>
