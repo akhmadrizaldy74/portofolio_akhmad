@@ -601,11 +601,134 @@ function AnimatedNumber({ value, duration = 1.4, decimals = 2 }) {
   return <span ref={ref}>{displayValue}</span>
 }
 
+function MagneticWrapper({ children, className = '', maxDistance = 10 }) {
+  const ref = useRef(null)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+
+  const handleMouseMove = (e) => {
+    if (!ref.current) return
+    const { clientX, clientY } = e
+    const { left, top, width, height } = ref.current.getBoundingClientRect()
+    const centerX = left + width / 2
+    const centerY = top + height / 2
+    const distanceX = (clientX - centerX) * 0.22
+    const distanceY = (clientY - centerY) * 0.22
+    setPosition({
+      x: Math.max(-maxDistance, Math.min(maxDistance, distanceX)),
+      y: Math.max(-maxDistance, Math.min(maxDistance, distanceY)),
+    })
+  }
+
+  const handleMouseLeave = () => {
+    setPosition({ x: 0, y: 0 })
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      animate={{ x: position.x, y: position.y }}
+      transition={{ type: 'spring', stiffness: 350, damping: 22, mass: 0.5 }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function TiltCard({ children, className = '', maxAngle = 7 }) {
+  const ref = useRef(null)
+  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0 })
+
+  const handleMouseMove = (e) => {
+    if (!ref.current) return
+    const rect = ref.current.getBoundingClientRect()
+    const x = e.clientX - rect.left - rect.width / 2
+    const y = e.clientY - rect.top - rect.height / 2
+    const rotateY = (x / (rect.width / 2)) * maxAngle
+    const rotateX = -(y / (rect.height / 2)) * maxAngle
+    setTilt({ rotateX, rotateY })
+  }
+
+  const handleMouseLeave = () => {
+    setTilt({ rotateX: 0, rotateY: 0 })
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      animate={{
+        rotateX: tilt.rotateX,
+        rotateY: tilt.rotateY,
+      }}
+      transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [language, setLanguage] = useState('id')
   const [selectedCertificate, setSelectedCertificate] = useState(null)
+  const [activeSection, setActiveSection] = useState('about')
+  const [toastMessage, setToastMessage] = useState(null)
+  const [roleIndex, setRoleIndex] = useState(0)
   const text = copy[language]
+
+  const rolesId = [
+    'Software Developer',
+    'Analis Sistem Tersertifikasi BNSP',
+    'UI/UX Designer',
+    'Enterprise Full-Stack Engineer',
+  ]
+  const rolesEn = [
+    'Software Developer',
+    'BNSP-Certified Systems Analyst',
+    'UI/UX Designer',
+    'Enterprise Full-Stack Engineer',
+  ]
+
+  // Role title rotation cycle
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRoleIndex((prev) => (prev + 1) % rolesId.length)
+    }, 3200)
+    return () => clearInterval(interval)
+  }, [rolesId.length])
+
+  // ScrollSpy active section detection
+  useEffect(() => {
+    const sectionIds = ['about', 'work', 'background', 'skills', 'contact']
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 250
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const id = sectionIds[i]
+        const element = document.getElementById(id)
+        if (element && element.offsetTop <= scrollPosition) {
+          setActiveSection(id)
+          break
+        }
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const copyToClipboard = (textToCopy, label) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        setToastMessage(language === 'id' ? `✓ ${label} berhasil disalin ke clipboard!` : `✓ ${label} copied to clipboard!`)
+        setTimeout(() => setToastMessage(null), 2800)
+      })
+    }
+  }
 
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, {
@@ -692,11 +815,76 @@ export default function Home() {
             </a>
 
             <nav className={`${styles.nav} ${menuOpen ? styles.navOpen : ''}`} aria-label="Main navigation" id="main-navigation">
-              <a href="#about" className={styles.navItem} onClick={(e) => handleNavClick(e, 'about')}>{text.about}</a>
-              <a href="#work" className={styles.navItem} onClick={(e) => handleNavClick(e, 'work')}>{text.work}</a>
-              <a href="#background" className={styles.navItem} onClick={(e) => handleNavClick(e, 'background')}>{text.background}</a>
-              <a href="#skills" className={styles.navItem} onClick={(e) => handleNavClick(e, 'skills')}>{text.skillsNav}</a>
-              <a href="#contact" className={styles.navItem} onClick={(e) => handleNavClick(e, 'contact')}>{text.contact}</a>
+              <a
+                href="#about"
+                className={`${styles.navItem} ${activeSection === 'about' ? styles.navItemActive : ''}`}
+                onClick={(e) => handleNavClick(e, 'about')}
+              >
+                {text.about}
+                {activeSection === 'about' && (
+                  <motion.span
+                    layoutId="activeNavIndicator"
+                    className={styles.activeNavDot}
+                    transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                  />
+                )}
+              </a>
+              <a
+                href="#work"
+                className={`${styles.navItem} ${activeSection === 'work' ? styles.navItemActive : ''}`}
+                onClick={(e) => handleNavClick(e, 'work')}
+              >
+                {text.work}
+                {activeSection === 'work' && (
+                  <motion.span
+                    layoutId="activeNavIndicator"
+                    className={styles.activeNavDot}
+                    transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                  />
+                )}
+              </a>
+              <a
+                href="#background"
+                className={`${styles.navItem} ${activeSection === 'background' ? styles.navItemActive : ''}`}
+                onClick={(e) => handleNavClick(e, 'background')}
+              >
+                {text.background}
+                {activeSection === 'background' && (
+                  <motion.span
+                    layoutId="activeNavIndicator"
+                    className={styles.activeNavDot}
+                    transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                  />
+                )}
+              </a>
+              <a
+                href="#skills"
+                className={`${styles.navItem} ${activeSection === 'skills' ? styles.navItemActive : ''}`}
+                onClick={(e) => handleNavClick(e, 'skills')}
+              >
+                {text.skillsNav}
+                {activeSection === 'skills' && (
+                  <motion.span
+                    layoutId="activeNavIndicator"
+                    className={styles.activeNavDot}
+                    transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                  />
+                )}
+              </a>
+              <a
+                href="#contact"
+                className={`${styles.navItem} ${activeSection === 'contact' ? styles.navItemActive : ''}`}
+                onClick={(e) => handleNavClick(e, 'contact')}
+              >
+                {text.contact}
+                {activeSection === 'contact' && (
+                  <motion.span
+                    layoutId="activeNavIndicator"
+                    className={styles.activeNavDot}
+                    transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                  />
+                )}
+              </a>
             </nav>
 
             <div className={styles.topbarRight}>
@@ -778,7 +966,19 @@ export default function Home() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  {text.role}
+                  <span className={styles.rolePrefix}>✦</span>
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={`${language}-${roleIndex}`}
+                      initial={{ opacity: 0, y: 7 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -7 }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      className={styles.rotatingRoleText}
+                    >
+                      {language === 'id' ? rolesId[roleIndex] : rolesEn[roleIndex]}
+                    </motion.span>
+                  </AnimatePresence>
                 </motion.div>
                 <motion.h1
                   className={styles.heroTitle}
@@ -804,19 +1004,25 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.38, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <a href="/CV_Akhmad_Rizaldy.pdf" className={styles.primaryButton} download>
-                    <span>{text.download}</span>
-                    <span className={styles.btnIcon}>↓</span>
-                  </a>
+                  <MagneticWrapper className={styles.magneticWrapper}>
+                    <a href="/CV_Akhmad_Rizaldy.pdf" className={styles.primaryButton} download>
+                      <span>{text.download}</span>
+                      <span className={styles.btnIcon}>↓</span>
+                    </a>
+                  </MagneticWrapper>
                   <div className={styles.heroActionsRow}>
-                    <a href="https://github.com/akhmadrizaldy74" className={styles.secondaryButton} target="_blank" rel="noreferrer">
-                      <span>{language === 'id' ? 'Lihat GitHub' : 'View GitHub'}</span>
-                      <span className={styles.btnIcon}>↗</span>
-                    </a>
-                    <a href="#contact" className={`${styles.secondaryButton} ${styles.contactBtn}`}>
-                      <span>{text.contact}</span>
-                      <span className={styles.btnIcon}>↘</span>
-                    </a>
+                    <MagneticWrapper className={styles.magneticWrapperFull}>
+                      <a href="https://github.com/akhmadrizaldy74" className={styles.secondaryButton} target="_blank" rel="noreferrer">
+                        <span>{language === 'id' ? 'Lihat GitHub' : 'View GitHub'}</span>
+                        <span className={styles.btnIcon}>↗</span>
+                      </a>
+                    </MagneticWrapper>
+                    <MagneticWrapper className={styles.magneticWrapperFull}>
+                      <a href="#contact" className={`${styles.secondaryButton} ${styles.contactBtn}`} onClick={(e) => handleNavClick(e, 'contact')}>
+                        <span>{text.contact}</span>
+                        <span className={styles.btnIcon}>↘</span>
+                      </a>
+                    </MagneticWrapper>
                   </div>
                 </motion.div>
               </div>
@@ -827,7 +1033,7 @@ export default function Home() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
               >
-                <div className={styles.heroPortrait}>
+                <TiltCard className={styles.heroPortrait}>
                   <Image
                     src="/images/profile/foto_akhmad.png"
                     alt="Foto profil Akhmad Rizaldy"
@@ -839,7 +1045,7 @@ export default function Home() {
                   <div className={styles.portraitCornerTag}>
                     <span>JAKARTA, ID</span>
                   </div>
-                </div>
+                </TiltCard>
               </motion.div>
             </div>
 
@@ -1420,13 +1626,19 @@ export default function Home() {
                 <motion.a
                   href="mailto:akhmadrizaldy74@gmail.com"
                   className={styles.contactCard}
+                  onClick={(e) => {
+                    copyToClipboard('akhmadrizaldy74@gmail.com', 'Email')
+                  }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: 0.04 }}
                   whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                  title={language === 'id' ? 'Klik untuk salin email' : 'Click to copy email'}
                 >
-                  <span className={styles.contactLabel}>{text.email}</span>
+                  <span className={styles.contactLabel}>
+                    {text.email} • <span style={{ color: '#d8a85b' }}>{language === 'id' ? 'Klik Salin' : 'Click to Copy'}</span>
+                  </span>
                   <strong className={styles.contactValue}>akhmadrizaldy74@gmail.com</strong>
                   <span className={styles.contactArrow}>↗</span>
                 </motion.a>
@@ -1436,13 +1648,19 @@ export default function Home() {
                   target="_blank"
                   rel="noreferrer"
                   className={styles.contactCard}
+                  onClick={() => {
+                    copyToClipboard('+62 878 3066 5027', 'WhatsApp')
+                  }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: 0.08 }}
                   whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                  title={language === 'id' ? 'Buka WhatsApp & salin nomor' : 'Open WhatsApp & copy number'}
                 >
-                  <span className={styles.contactLabel}>{text.whatsapp}</span>
+                  <span className={styles.contactLabel}>
+                    {text.whatsapp} • <span style={{ color: '#d8a85b' }}>{language === 'id' ? 'Klik Salin' : 'Click to Copy'}</span>
+                  </span>
                   <strong className={styles.contactValue}>+62 878 3066 5027</strong>
                   <span className={styles.contactArrow}>↗</span>
                 </motion.a>
@@ -1667,6 +1885,22 @@ export default function Home() {
                     </p>
                   )}
                 </motion.section>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* FLOATING COPY TOAST NOTIFICATION */}
+          <AnimatePresence>
+            {toastMessage && (
+              <motion.div
+                className={styles.floatingToast}
+                initial={{ opacity: 0, y: 24, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 16, scale: 0.9 }}
+                transition={{ type: 'spring', stiffness: 360, damping: 24 }}
+              >
+                <span className={styles.toastIcon}>✓</span>
+                <span>{toastMessage}</span>
               </motion.div>
             )}
           </AnimatePresence>
