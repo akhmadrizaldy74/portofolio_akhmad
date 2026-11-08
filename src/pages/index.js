@@ -86,7 +86,7 @@ const projects = [
     image: '/images/projects/wargabersih-mockup.png',
     stackList: ['JavaScript (ES6+)', 'Fetch API & JSON', 'HTML5 Semantic', 'CSS3 Custom Properties', 'Figma', 'Responsive Web Design'],
     repo: 'https://github.com/akhmadrizaldy74',
-    demo: '/projects/wargabersih/index.html',
+    demo: null,
     figma: null,
   },
   {
