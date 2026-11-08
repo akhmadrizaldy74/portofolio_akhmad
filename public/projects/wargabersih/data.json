@@ -1,0 +1,24 @@
+{
+  "features": [
+    {
+      "icon": "🗓️",
+      "title": "Jadwal Pengambilan Sampah",
+      "description": "Lihat jadwal pengambilan sampah terbaru agar lingkungan tetap bersih dan teratur."
+    },
+    {
+      "icon": "📢",
+      "title": "Pengumuman RT/RW",
+      "description": "Dapatkan update penting seperti kegiatan warga, rapat, dan informasi kebersihan."
+    },
+    {
+      "icon": "🧾",
+      "title": "Laporan Warga",
+      "description": "Kirim laporan tentang masalah lingkungan seperti lampu jalan rusak atau kebersihan umum."
+    },
+    {
+      "icon": "🔔",
+      "title": "Notifikasi Real-time",
+      "description": "Pemberitahuan via aplikasi, email, dan WhatsApp untuk update terkini."
+    }
+  ]
+}
